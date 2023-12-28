@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  {{- with .Values.configs }}
+  brandsUserPoolId: {{ .brandsUserPoolId | quote}}
+  iconsUserPoolId: {{ .iconsUserPoolId | quote}}
+  brandsUserPoolDomain: {{ .brandsUserPoolDomain | quote}}
+  iconsUserPoolDomain: {{ .iconsUserPoolDomain | quote}}
+  {{- end }}
