@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "authenticator.fullname" . }}
+  labels:
+    {{- include "authenticator.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "authenticator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "authenticator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "authenticator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: MONGO_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: MONGO_URL
+          - name: BRANDS_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: BRANDS_CLIENT_ID
+          - name: BRANDS_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: BRANDS_CLIENT_SECRET
+          - name: ICONS_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: ICONS_CLIENT_ID
+          - name: ICONS_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: ICONS_CLIENT_SECRET
+          - name: ADMIN_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: ADMIN_CLIENT_ID
+          - name: ADMIN_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.authenticator }}
+                key: ADMIN_CLIENT_SECRET
+          - name: ICONS_USER_POOL_DOMAIN
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-configmap
+                key: iconsUserPoolDomain
+          - name: BRANDS_USER_POOL_DOMAIN
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-configmap
+                key: brandsUserPoolDomain
+          - name: BRANDS_USER_POOL_ID
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-configmap
+                key: brandsUserPoolId
+          - name: ICONS_USER_POOL_ID
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-configmap
+                key: iconsUserPoolId
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
