@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: {{ include "{{ .Chart.Name }}.fullname" . }}
+  name: {{ include "skeleton-app-2023.fullname" . }}
   labels:
     {{- include "skeleton-app-2023.labels" . | nindent 4 }}
 spec:
