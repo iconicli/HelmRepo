@@ -1,0 +1,20 @@
+{{- if .Values.istio.enabled -}}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "skeleton-app-2023.fullname" . }}
+  labels:
+    {{- include "skeleton-app-2023.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ required "Name of host is required" .Values.istio.virtualService.host | quote}}
+  gateways:
+    - {{ required "Name of Istio gateway is required" .Values.istio.gateway.name }}
+
+  http:
+    route:
+    - destination:
+        host: {{ include "skeleton-app-2023.fullname" . }}
+        port:
+          number: {{ .Values.service.port }}
+{{- end }}
