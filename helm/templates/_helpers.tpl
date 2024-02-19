@@ -34,6 +34,9 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "skeleton-app-2023.labels" -}}
+app: {{ .Release.Name }}
+version: {{ .Chart.Version }}
+sidecar.istio.io/inject: "true"
 helm.sh/chart: {{ include "skeleton-app-2023.chart" . }}
 {{ include "skeleton-app-2023.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
